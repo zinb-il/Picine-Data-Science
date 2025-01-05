@@ -1,15 +1,5 @@
 services:
-  ## Create Service for Postgres
-  postgres:
-    container_name: postgres
-    image: postgres:latest
-    ports:
-      - "5432:5432"
-    volumes:
-      - /src/postgres/data_pg:/var/lib/postgresql/data/
-    env_file:
-      - .env
-    restart: always
+  ## Create Service for Pgadmin
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4

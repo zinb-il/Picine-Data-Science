@@ -49,12 +49,10 @@ def get_create_query(cols: list, table_name: str)-> str | None:
         return None
     return  f"""DROP TABLE IF EXISTS {table_name};
         CREATE TABLE {table_name} (
-        "{cols[0]}" TIMESTAMP,
-        "{cols[1]}" VARCHAR(255),
-        "{cols[2]}" INTEGER,
-        "{cols[3]}" DECIMAL(10,2),
-        "{cols[4]}" BIGINT,
-        "{cols[5]}" TEXT
+        "{cols[0]}" INTEGER,
+        "{cols[1]}" NUMERIC,
+        "{cols[2]}" TEXT,
+        "{cols[3]}" VARCHAR(255)
     );"""
 
 def insert_values(pf: pd.DataFrame, table_name: str, cursor: psycopg2.extensions.cursor)-> None:
@@ -72,12 +70,12 @@ def insert_values(pf: pd.DataFrame, table_name: str, cursor: psycopg2.extensions
         columns = ", ".join([f'"{col}"' for col in pf.columns])
         for index, row in pf.iterrows():
             values = ", ".join([f"'{val}'" for val in row])
-            cursor.execute (f"INSERT INTO {table_name} ({columns}) VALUES (%s, %s, %s, %s, %s, %s);", 
-                (row.iloc[0], row.iloc[1], row.iloc[2], row.iloc[3], row.iloc[4], row.iloc[5]))
+            cursor.execute (f"INSERT INTO {table_name} ({columns}) VALUES (%s, %s, %s, %s);", 
+                (row.iloc[0], row.iloc[1], row.iloc[2], row.iloc[3]))
 
 
 def create_tables(__dir: str = "./",files: list | None = None)-> None:
-    """This function create table in a postgress databse bas on csv file
+    """This function create table in a pewostgress databse bas on csv file
 
     Args:
         files (list): list of files to turn as table in postgres database
@@ -112,7 +110,7 @@ def create_tables(__dir: str = "./",files: list | None = None)-> None:
 
 def main():
     try:
-        path  = './customer/'
+        path  = './item/'
         files = get_files(path)
         create_tables(path, files)
     except Exception as err:
