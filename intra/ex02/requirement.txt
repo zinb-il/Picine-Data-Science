@@ -1,0 +1,7 @@
+#python3 -m venv myenv
+#source myenv/bin/activate
+
+psycopg2==2.9.10
+pandas==2.2.3
+python-dotenv==1.0.1
+tqdm==4.67.1
