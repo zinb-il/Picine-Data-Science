@@ -73,7 +73,6 @@ def insert_values(pf: pd.DataFrame, table_name: str, cursor: psycopg2.extensions
     
     columns = ", ".join([f'"{col}"' for col in pf.columns])
     for index, row in tqdm(pf.iterrows(), total=pf.shape[0]):
-        values = ", ".join([f"'{val}'" for val in row])
         cursor.execute (f"INSERT INTO {table_name} ({columns}) VALUES (%s, %s, %s, %s, %s, %s);", 
             (row.iloc[0], row.iloc[1], row.iloc[2], row.iloc[3], row.iloc[4], row.iloc[5]))
         sleep(0.01)
