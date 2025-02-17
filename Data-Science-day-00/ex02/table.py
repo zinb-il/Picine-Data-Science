@@ -3,11 +3,11 @@ import os
 import psycopg2
 import pandas as pd
 from tqdm import tqdm
-from time import sleep                                                                                                                                                                             
+from time import sleep
 from dotenv import load_dotenv
 
 
-def get_pd_object(__file: str)-> pd.DataFrame:
+def get_pd_object(__file: str) -> pd.DataFrame:
     """This function is for open a csv file with pandas
 
     Args:
@@ -20,8 +20,9 @@ def get_pd_object(__file: str)-> pd.DataFrame:
     return df
 
 
-def get_files(__dir: str = "./", __ext: str = "csv")->list:
-    """this function is for getting all files with a specific extension in a directory
+def get_files(__dir: str = "./", __ext: str = "csv") -> list:
+    """this function is for getting all files with a specific extension \
+in a directory
 
     Args:
         __ext (str): extention of the file
@@ -37,7 +38,7 @@ def get_files(__dir: str = "./", __ext: str = "csv")->list:
     return files
 
 
-def get_create_query(cols: list, table_name: str)-> str | None:
+def get_create_query(cols: list, table_name: str) -> str | None:
     """This function use to create your query string
 
     Args:
@@ -49,7 +50,7 @@ def get_create_query(cols: list, table_name: str)-> str | None:
     """
     if not cols or not table_name:
         return None
-    return  f"""DROP TABLE IF EXISTS {table_name};
+    return f"""DROP TABLE IF EXISTS {table_name};
         CREATE TABLE {table_name} (
         "{cols[0]}" TIMESTAMP,
         "{cols[1]}" VARCHAR(255),
@@ -59,7 +60,9 @@ def get_create_query(cols: list, table_name: str)-> str | None:
         "{cols[5]}" TEXT
     );"""
 
-def insert_values(pf: pd.DataFrame, table_name: str, cursor: psycopg2.extensions.cursor)-> None:
+
+def insert_values(pf: pd.DataFrame, table_name: str,
+                  cursor: psycopg2.extensions.cursor) -> None:
     """this function insert values inside a csv file into a table
 
     Args:
@@ -70,15 +73,21 @@ def insert_values(pf: pd.DataFrame, table_name: str, cursor: psycopg2.extensions
     Returns:
         str: query
     """
-    
+
     columns = ", ".join([f'"{col}"' for col in pf.columns])
     for index, row in tqdm(pf.iterrows(), total=pf.shape[0]):
-        cursor.execute (f"INSERT INTO {table_name} ({columns}) VALUES (%s, %s, %s, %s, %s, %s);", 
-            (row.iloc[0], row.iloc[1], row.iloc[2], row.iloc[3], row.iloc[4], row.iloc[5]))
-        sleep(0.01)
+        cursor.execute(f"INSERT INTO {table_name} ({columns})\
+                       VALUES (%s, %s, %s, %s, %s, %s);",
+                       (row.iloc[0],
+                        row.iloc[1],
+                        row.iloc[2],
+                        row.iloc[3],
+                        row.iloc[4],
+                        row.iloc[5]))
+        sleep(0.001)
 
 
-def create_tables(__dir: str = "./",files: list | None = None)-> None:
+def create_tables(__dir: str = "./", files: list | None = None) -> None:
     """This function create table in a postgress databse bas on csv file
 
     Args:
@@ -96,14 +105,15 @@ def create_tables(__dir: str = "./",files: list | None = None)-> None:
             password=os.getenv("POSTGRES_PASSWORD"),
         )
         cursor = conn.cursor()
-        for file in  files:
+        for file in files:
             table_name = file.split('.')[0]
             pf = get_pd_object(__dir + file)
             query = get_create_query(list(pf.columns), table_name)
             if query:
                 cursor.execute(query)
-                print(f"Votre requête d'insertion dan la table {table_name} est en cours de traitement")
-                insert_values(pf,table_name, cursor)
+                print(f"Votre requête d'insertion dan la table \
+{table_name} est en cours de traitement")
+                insert_values(pf, table_name, cursor)
                 conn.commit()
     except Exception as err:
         print(f"Error exception {err}")
@@ -115,13 +125,11 @@ def create_tables(__dir: str = "./",files: list | None = None)-> None:
 
 def main():
     try:
-        path  = './customer/'
+        path = './customer/'
         files = get_files(path)
         create_tables(path, files)
     except Exception as err:
         print(f"Error exception {err}")
-
-
 
 
 if __name__ == "__main__":

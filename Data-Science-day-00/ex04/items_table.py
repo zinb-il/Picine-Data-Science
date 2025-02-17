@@ -3,15 +3,14 @@ import sys
 import psycopg2
 import pandas as pd
 from tqdm import tqdm
-from time import sleep                                                                                                                                                                             
+from time import sleep
 from dotenv import load_dotenv
+
 sys.path.append('../ex02')
 from table import get_files, get_pd_object
 
 
-
-
-def get_create_query(cols: list, table_name: str)-> str | None:
+def get_create_query(cols: list, table_name: str) -> str | None:
     """This function use to create your query string
 
     Args:
@@ -23,7 +22,7 @@ def get_create_query(cols: list, table_name: str)-> str | None:
     """
     if not cols or not table_name:
         return None
-    return  f"""DROP TABLE IF EXISTS {table_name};
+    return f"""DROP TABLE IF EXISTS {table_name};
         CREATE TABLE {table_name} (
         "{cols[0]}" INTEGER,
         "{cols[1]}" NUMERIC,
@@ -31,7 +30,9 @@ def get_create_query(cols: list, table_name: str)-> str | None:
         "{cols[3]}" VARCHAR(255)
     );"""
 
-def insert_values(pf: pd.DataFrame, table_name: str, cursor: psycopg2.extensions.cursor)-> None:
+
+def insert_values(pf: pd.DataFrame, table_name: str,
+                  cursor: psycopg2.extensions.cursor) -> None:
     """this function insert values inside a csv file into a table
 
     Args:
@@ -44,13 +45,15 @@ def insert_values(pf: pd.DataFrame, table_name: str, cursor: psycopg2.extensions
     """
     columns = ", ".join([f'"{col}"' for col in pf.columns])
     for index, row in tqdm(pf.iterrows(), total=pf.shape[0]):
-        values = ", ".join([f"'{val}'" for val in row])
-        cursor.execute (f"INSERT INTO {table_name} ({columns}) VALUES (%s, %s, %s, %s);", 
-            (row.iloc[0], row.iloc[1], row.iloc[2], row.iloc[3]))
+        cursor.execute(f"INSERT INTO {table_name} ({columns}) \
+            VALUES (%s, %s, %s, %s);", (row.iloc[0],
+                                        row.iloc[1],
+                                        row.iloc[2],
+                                        row.iloc[3]))
         sleep(0.01)
 
 
-def create_tables(__dir: str = "./",files: list | None = None)-> None:
+def create_tables(__dir: str = "./", files: list | None = None) -> None:
     """This function create table in a pewostgress databse bas on csv file
 
     Args:
@@ -68,14 +71,15 @@ def create_tables(__dir: str = "./",files: list | None = None)-> None:
             password=os.getenv("POSTGRES_PASSWORD"),
         )
         cursor = conn.cursor()
-        for file in  files:
+        for file in files:
             table_name = file.split('.')[0]
             pf = get_pd_object(__dir + file)
             query = get_create_query(list(pf.columns), table_name)
             if query:
                 cursor.execute(query)
-                print(f"Votre requête d'insertion dan la table {table_name} est en cours de traitement")
-                insert_values(pf,table_name, cursor)
+                print(f"Votre requête d'insertion dan la table {table_name} \
+est en cours de traitement")
+                insert_values(pf, table_name, cursor)
                 conn.commit()
     except Exception as err:
         print(f"Error exception {err}")
@@ -87,13 +91,11 @@ def create_tables(__dir: str = "./",files: list | None = None)-> None:
 
 def main():
     try:
-        path  = './item/'
+        path = './item/'
         files = get_files(path)
         create_tables(path, files)
     except Exception as err:
         print(f"Error exception {err}")
-
-
 
 
 if __name__ == "__main__":
